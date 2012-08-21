@@ -1,6 +1,10 @@
-//ImpactJS Per-Pixel Collision Detection Plugin
-//Written by Abraham Walters
-//January 2012
+/*
+ * ImpactJS Per-Pixel Collision Detection Plugin
+ * Written by Abraham Walters
+ * v1.0 - January 2012
+ * v1.1 - August 2012
+ *
+ */
 ig.module(
 	'plugins.perpixel'
 )
@@ -16,51 +20,62 @@ ig.module(
         alphas: [],
         alphasLoaded: false,
 
-        loadAlphas: function () {
-            var canvas = ig.$new('canvas');
+        loadAlphas: function(){
+            var canvas = ig.$new( 'canvas' );
             canvas.width = this.data.width;
             canvas.height = this.data.height;
-            var ctx = canvas.getContext('2d');
+            var ctx = canvas.getContext( '2d' );
 
-            ctx.drawImage(this.data, 0, 0);
-            var pixels = ctx.getImageData(0, 0, this.data.width, this.data.height).data,
+            ctx.drawImage( this.data, 0, 0 );
+            var pixels = ctx.getImageData( 0, 0, this.data.width, this.data.height ).data,
                 aIndex = 0,
                 width = this.data.width * 4,
                 height = this.data.height * width;
 
-            for (var y = 3; y < height; y += width) {
-                for (var x = 0; x < width; x += 4) {
+            for( var y = 3; y < height; y += width ){
+                for( var x = 0; x < width; x += 4 ){
                     this.alphas[aIndex++] = pixels[x + y] ? true : false;
                 }
             }
             this.alphasLoaded = true;
         },
 
-        onload: function (event) {
-            if (!this.alphasLoaded) {
+        onload: function( event ){
+            if ( !this.alphasLoaded ){
                 this.loadAlphas();
             }
-            this.parent(event);
+            this.parent( event );
         }
 
     });
 
     ig.Entity.inject({
 
-        touches: function (other) {
+        touches: function( other ){
+            //if in weltmeister or no associated animation sheet for either entity
+            //call parent method and ignore per-pixel
+            if( ig.global.wm || this.currentAnim === null || other.currentAnim === null ){
+                return this.parent( other );
+            }
+
+            //start with initial overlapping bounding box test
+            //this section mimics the parent method,
+            //but initializes some vars needed later on in the algorithm
             var xA = this.pos.x.round(),
                 yA = this.pos.y.round(),
                 xB = other.pos.x.round(),
                 yB = other.pos.y.round(),
-                xMin = Math.max(xA, xB),
-                xMax = Math.min(xA + this.size.x, xB + other.size.x),
-                yMin = Math.max(yA, yB),
-                yMax = Math.min(yA + this.size.y, yB + other.size.y);
+                xMin = Math.max( xA, xB ),
+                xMax = Math.min( xA + this.size.x, xB + other.size.x ),
+                yMin = Math.max( yA, yB ),
+                yMax = Math.min( yA + this.size.y, yB + other.size.y );
 
-            if (xMin >= xMax || yMin >= yMax) {
+            if( xMin >= xMax || yMin >= yMax ) {
                 return false;
             }
 
+            //start per-pixel
+            //calculate all necessary variables
             var a = this.currentAnim.sheet.image.alphas,
                 b = other.currentAnim.sheet.image.alphas,
                 i = yMax - yMin,
@@ -82,12 +97,15 @@ ig.module(
                 bStart = xMin - xB + offsetBx,
                 xDiff = xMax - xMin;
 
-            while (i--) {
+            //loop through both entities' .alpha arrays
+            //if an alpha value > 0 is found to occupy
+            //the same pixel for both entities, a collision occurs
+            while( i-- ) {
                 var j = xDiff,
                     x1 = aStart,
                     x2 = bStart;
-                while (j--) {
-                    if (a[y1 + x1++] && b[y2 + x2]) {
+                while( j-- ) {
+                    if ( a[y1 + x1++] && b[y2 + x2] ) {
                         return true;
                     }
                     x2++;

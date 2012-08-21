@@ -1,9 +1,10 @@
 This plugin comes with some caveats. To help you understand the caveats, let me explain how this plugin works.
 
-The algorithm for per-pixel collision detection is simple: get the overlapping pixels from two Entities, and if both pixels are not transparent ( alpha != 0 ), a collision has occurred.
+The algorithm for per-pixel collision detection is simple: get the overlapping pixels from two Entities, and if both pixels are not transparent (alpha !== 0), a collision has occurred.
 
 In its basic form, the algorithm looks like this:
 
+```javascript
 for( var y = yMin; y < yMax; y++ ){
     for( var x = xMin; x < xMax; x++ ){
         if( a[ x - this.pos.x + ( y - this.pos.y ) * this.size.x ] &&
@@ -12,6 +13,7 @@ for( var y = yMin; y < yMax; y++ ){
         }
     }
 }
+```
 
 Where xMin, xMax, yMin and yMax are the dimensions of the overlapping rectangle (if the Entity A overlaps Entity B in a tile engine, then the overlap will always be in a shape of a rectangle). Impact only has to find the dimensions of this rectangle, and if such a rectangle exists, and the test stops there. 
 
