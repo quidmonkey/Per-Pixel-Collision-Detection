@@ -1,4 +1,7 @@
-This plugin comes with some caveats. To help you understand the caveats, let me explain how this plugin works.
+Per-Pixel-Collision-Detection Plugin
+====================================
+
+This plugin allows for per-pixel collision detection in the [ImpactJS](http://impactjs.com/) engine. It comes with some caveats. To help you understand the caveats, let me explain how this plugin works.
 
 The algorithm for per-pixel collision detection is simple: get the overlapping pixels from two Entities, and if both pixels are not transparent (alpha !== 0), a collision has occurred.
 
